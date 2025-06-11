@@ -1,3 +1,4 @@
+      
 if (MSVC)
     # Setting this to true brakes Visual Studio builds.
     set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF CACHE BOOL "CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE")
@@ -30,26 +31,14 @@ endif ()
 if (CUDA_FOUND)
     message(STATUS "Found CUDA Toolkit v${CUDA_VERSION_STRING}")
 
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
-    string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-    string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
-    SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    MESSAGE(STATUS "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
+    set(HAVE_CUDA TRUE)
 
-    if (DEFINED CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR)
-        set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT "${CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR}")
-    elseif (EXISTS "${CMAKE_CUDA_COMPILER_TOOLKIT_ROOT}/nvvm/libdevice")
-        set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT "${CMAKE_CUDA_COMPILER_TOOLKIT_ROOT}")
-    elseif (CMAKE_SYSROOT_LINK AND EXISTS "${CMAKE_SYSROOT_LINK}/usr/lib/cuda/nvvm/libdevice")
-        set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT "${CMAKE_SYSROOT_LINK}/usr/lib/cuda")
-    elseif (EXISTS "${CMAKE_SYSROOT}/usr/lib/cuda/nvvm/libdevice")
-        set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT "${CMAKE_SYSROOT}/usr/lib/cuda")
-    else ()
-        message(FATAL_ERROR "Couldn't find CUDA library root.")
-    endif ()
-    unset(CMAKE_CUDA_COMPILER_LIBRARY_ROOT_FROM_NVVMIR_LIBRARY_DIR)
+
+    set(CMAKE_CUDA_ARCHITECTURES "80")
+
+    set(CMAKE_CUDA_COMPILER_LIBRARY_ROOT /usr/local/cuda)
 else ()
     message(STATUS "CUDA was not found.")
 endif ()
+
+    
