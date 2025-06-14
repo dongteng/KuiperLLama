@@ -43,7 +43,7 @@ namespace base {
     };
 
     struct CudaMemoryBuffer {
-        void *data;
+        void *data;// 指向内存的起始地址
         size_t byte_size;
         bool busy;
 
@@ -63,7 +63,7 @@ namespace base {
 
     private:
         mutable std::map<int, size_t> no_busy_cnt_;
-        mutable std::map<int, std::vector<CudaMemoryBuffer>> big_buffers_map_;
+        mutable std::map<int, std::vector<CudaMemoryBuffer>> big_buffers_map_;//mutable 是为了让这些成员变量在 const 函数中也能被修改 . const在函数后 代表承诺不修改这个类的成员变量
         mutable std::map<int, std::vector<CudaMemoryBuffer>> cuda_buffers_map_;
     };
 

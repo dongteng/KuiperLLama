@@ -2,6 +2,8 @@
 #define LLAMA_INFER_SAMPLER_H
 #include <cstddef>
 #include <cstdint>
+#include "base/base.h"
+
 namespace sampler {
 class Sampler {
  public:

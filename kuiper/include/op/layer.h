@@ -1,5 +1,6 @@
 #ifndef KUIPER_INCLUDE_OP_LAYER_H_
 #define KUIPER_INCLUDE_OP_LAYER_H_
+
 #include <base/cuda_config.h>
 #include <string>
 #include <vector>
@@ -7,184 +8,185 @@
 #include "tensor/tensor.h"
 
 namespace op {
-class Layer;
-enum class LayerType : uint8_t {
-  kLayerUnknown = 0,
-  kLayerLinear = 1,
-  kLayerEncode = 2,
-  kLayerEmbedding = 3,
-  kLayerRMSNorm = 4,
-  kLayerMatmul = 5,
-  kLayerRoPe = 6,
-  kLayerMHA = 7,
-  kLayerSoftmax = 8,
-  kLayerAdd = 9,
-  kLayerSwiGLU = 10,
-};
+    class Layer;
 
-class BaseLayer {
- public:
-  explicit BaseLayer(base::DeviceType device_type, LayerType layer_type, base::DataType data_type,
-                     std::string layer_name = "");
+    enum class LayerType : uint8_t {
+        kLayerUnknown = 0,
+        kLayerLinear = 1,
+        kLayerEncode = 2,
+        kLayerEmbedding = 3,
+        kLayerRMSNorm = 4,
+        kLayerMatmul = 5,
+        kLayerRoPe = 6,
+        kLayerMHA = 7,
+        kLayerSoftmax = 8,
+        kLayerAdd = 9,
+        kLayerSwiGLU = 10,
+    };
 
-  base::DataType data_type() const;
+    class BaseLayer {
+    public:
+        explicit BaseLayer(base::DeviceType device_type, LayerType layer_type, base::DataType data_type,
+                           std::string layer_name = "");
 
-  LayerType layer_type() const;
+        base::DataType data_type() const;
 
-  virtual base::Status init() = 0;
+        LayerType layer_type() const;
 
-  virtual base::Status forward() = 0;
+        virtual base::Status init() = 0;
 
-  virtual base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& output1) = 0;
+        virtual base::Status forward() = 0;
 
-  virtual base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                               const tensor::Tensor& output1) = 0;
+        virtual base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &output1) = 0;
 
-  virtual base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                               const tensor::Tensor& input3, const tensor::Tensor& output1) = 0;
+        virtual base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                                     const tensor::Tensor &output1) = 0;
 
-  virtual base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                               const tensor::Tensor& input3, const tensor::Tensor& input4,
-                               const tensor::Tensor& output1) = 0;
+        virtual base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                                     const tensor::Tensor &input3, const tensor::Tensor &output1) = 0;
 
-  virtual base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                               const tensor::Tensor& input3, const tensor::Tensor& input4,
-                               const tensor::Tensor& input5, const tensor::Tensor& output1) = 0;
+        virtual base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                                     const tensor::Tensor &input3, const tensor::Tensor &input4,
+                                     const tensor::Tensor &output1) = 0;
 
-  virtual void set_input(int32_t idx, const tensor::Tensor& input) = 0;
+        virtual base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                                     const tensor::Tensor &input3, const tensor::Tensor &input4,
+                                     const tensor::Tensor &input5, const tensor::Tensor &output1) = 0;
 
-  virtual void set_output(int32_t idx, const tensor::Tensor& output) = 0;
+        virtual void set_input(int32_t idx, const tensor::Tensor &input) = 0;
 
-  virtual size_t input_size() const = 0;
+        virtual void set_output(int32_t idx, const tensor::Tensor &output) = 0;
 
-  virtual size_t output_size() const = 0;
+        virtual size_t input_size() const = 0;
 
-  virtual base::Status check() const = 0;
+        virtual size_t output_size() const = 0;
 
-  virtual tensor::Tensor& get_input(int32_t idx) = 0;
+        virtual base::Status check() const = 0;
 
-  virtual tensor::Tensor& get_output(int32_t idx) = 0;
+        virtual tensor::Tensor &get_input(int32_t idx) = 0;
 
-  virtual const tensor::Tensor& get_input(int32_t idx) const = 0;
+        virtual tensor::Tensor &get_output(int32_t idx) = 0;
 
-  virtual const tensor::Tensor& get_output(int32_t idx) const = 0;
+        virtual const tensor::Tensor &get_input(int32_t idx) const = 0;
 
-  virtual base::Status set_weight(int32_t idx, const tensor::Tensor& weight);
+        virtual const tensor::Tensor &get_output(int32_t idx) const = 0;
 
-  virtual base::Status set_weight(int32_t idx, const std::vector<int32_t>& dims,
-                                  const void* weight_ptr,
-                                  base::DeviceType device_type = base::DeviceType::kDeviceUnknown);
+        virtual base::Status set_weight(int32_t idx, const tensor::Tensor &weight);
 
-  const std::string& get_layer_name() const;
+        virtual base::Status set_weight(int32_t idx, const std::vector<int32_t> &dims,
+                                        const void *weight_ptr,
+                                        base::DeviceType device_type = base::DeviceType::kDeviceUnknown);
 
-  void set_layer_name(const std::string& layer_name);
+        const std::string &get_layer_name() const; //返回层的名字 返回值是一个引用类型
 
-  base::DeviceType device_type() const;
+        void set_layer_name(const std::string &layer_name); //设置层的名称
 
-  void set_device_type(base::DeviceType device_type);
+        base::DeviceType device_type() const;
 
- protected:
-  std::string layer_name_;
-  LayerType layer_type_ = LayerType::kLayerUnknown;
-  base::DataType data_type_ = base::DataType::kDataTypeUnknown;
-  base::DeviceType device_type_ = base::DeviceType::kDeviceUnknown;
-};
+        void set_device_type(base::DeviceType device_type);
 
-class Layer : public BaseLayer {
- public:
-  explicit Layer(base::DeviceType device_type, LayerType layer_type, std::string layer_name = "");
+    protected:
+        std::string layer_name_;//层名
+        LayerType layer_type_ = LayerType::kLayerUnknown;//层类型
+        base::DataType data_type_ = base::DataType::kDataTypeUnknown;//层数据类型
+        base::DeviceType device_type_ = base::DeviceType::kDeviceUnknown;
+    };
 
-  base::Status init() override;
+    class Layer : public BaseLayer {
+    public:
+        explicit Layer(base::DeviceType device_type, LayerType layer_type, std::string layer_name = "");
 
-  base::Status check_tensor(const tensor::Tensor& tensor, base::DeviceType device_type,
-                            base::DataType data_type) const;
+        base::Status init() override;
 
-  base::Status check_tensor_with_dim(const tensor::Tensor& tensor, base::DeviceType device_type,
-                                     base::DataType data_type, ...) const;
+        base::Status check_tensor(const tensor::Tensor &tensor, base::DeviceType device_type,
+                                  base::DataType data_type) const;
 
-  base::Status check() const override;
+        base::Status check_tensor_with_dim(const tensor::Tensor &tensor, base::DeviceType device_type,
+                                           base::DataType data_type, ...) const;
 
-  base::Status forward() override;
+        base::Status check() const override;
 
-  base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& output1) override;
+        base::Status forward() override;
 
-  base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                       const tensor::Tensor& output1) override;
+        base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &output1) override;
 
-  base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                       const tensor::Tensor& input3, const tensor::Tensor& output1) override;
+        base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                             const tensor::Tensor &output1) override;
 
-  base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                       const tensor::Tensor& input3, const tensor::Tensor& input4,
-                       const tensor::Tensor& output1) override;
+        base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                             const tensor::Tensor &input3, const tensor::Tensor &output1) override;
 
-  base::Status forward(const tensor::Tensor& input1, const tensor::Tensor& input2,
-                       const tensor::Tensor& input3, const tensor::Tensor& input4,
-                       const tensor::Tensor& input5, const tensor::Tensor& output1) override;
+        base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                             const tensor::Tensor &input3, const tensor::Tensor &input4,
+                             const tensor::Tensor &output1) override;
 
-  void set_input(int32_t idx, const tensor::Tensor& input) override;
+        base::Status forward(const tensor::Tensor &input1, const tensor::Tensor &input2,
+                             const tensor::Tensor &input3, const tensor::Tensor &input4,
+                             const tensor::Tensor &input5, const tensor::Tensor &output1) override;
 
-  void set_output(int32_t idx, const tensor::Tensor& output) override;
+        void set_input(int32_t idx, const tensor::Tensor &input) override;
 
-  const tensor::Tensor& get_input(int32_t idx) const override;
+        void set_output(int32_t idx, const tensor::Tensor &output) override;
 
-  const tensor::Tensor& get_output(int32_t idx) const override;
+        const tensor::Tensor &get_input(int32_t idx) const override;
 
-  tensor::Tensor& get_input(int32_t idx) override;
+        const tensor::Tensor &get_output(int32_t idx) const override;
 
-  tensor::Tensor& get_output(int32_t idx) override;
+        tensor::Tensor &get_input(int32_t idx) override;
 
-  size_t input_size() const override;
+        tensor::Tensor &get_output(int32_t idx) override;
 
-  size_t output_size() const override;
+        size_t input_size() const override;
 
-  void reset_input_size(size_t size);
+        size_t output_size() const override;
 
-  void reset_output_size(size_t size);
+        void reset_input_size(size_t size);
 
-  virtual void to_cuda();
+        void reset_output_size(size_t size);
 
-  void set_cuda_config(std::shared_ptr<kernel::CudaConfig> config);
+        virtual void to_cuda();
 
-  std::shared_ptr<kernel::CudaConfig> cuda_config() const;
+        void set_cuda_config(std::shared_ptr<kernel::CudaConfig> config);
 
- protected:
-  std::vector<tensor::Tensor> inputs_;
-  std::vector<tensor::Tensor> outputs_;
-  std::shared_ptr<kernel::CudaConfig> cuda_config_;
-};
+        std::shared_ptr<kernel::CudaConfig> cuda_config() const;
 
-class LayerParam : public Layer {
- public:
-  explicit LayerParam(base::DeviceType device_type, LayerType layer_type,
-                      bool is_quant_layer = false, std::string layer_name = "");
+    protected:
+        std::vector<tensor::Tensor> inputs_;
+        std::vector<tensor::Tensor> outputs_;
+        std::shared_ptr<kernel::CudaConfig> cuda_config_;
+    };
 
-  size_t weight_size() const;
+    class LayerParam : public Layer {//带参数的算子类，多了一个类内变量用于存储 权重 张量
+    public:
+        explicit LayerParam(base::DeviceType device_type, LayerType layer_type,
+                            bool is_quant_layer = false, std::string layer_name = "");
 
-  void reset_weight_size(size_t size);
+        size_t weight_size() const;
 
-  tensor::Tensor& get_weight(int32_t idx);
+        void reset_weight_size(size_t size);
 
-  const tensor::Tensor& get_weight(int32_t idx) const;
+        tensor::Tensor &get_weight(int32_t idx);
 
-  void to_cuda() override;
+        const tensor::Tensor &get_weight(int32_t idx) const;
 
-  base::Status set_weight(int32_t idx, const tensor::Tensor& weight) override;
+        void to_cuda() override;
 
-  base::Status set_weight(int32_t idx, const std::vector<int32_t>& dims, const void* weight_ptr,
-                          base::DeviceType device_type = base::DeviceType::kDeviceUnknown) override;
+        base::Status set_weight(int32_t idx, const tensor::Tensor &weight) override;
 
-  void set_scales(const tensor::Tensor& scales);
+        base::Status set_weight(int32_t idx, const std::vector<int32_t> &dims, const void *weight_ptr,
+                                base::DeviceType device_type = base::DeviceType::kDeviceUnknown) override;
 
-  void set_group_size(int32_t group_size);
+        void set_scales(const tensor::Tensor &scales);
 
-  int32_t get_scale_num() const;
+        void set_group_size(int32_t group_size);
 
- protected:
-  int32_t group_size_ = 0;
-  bool is_quant_layer_ = false;
-  tensor::Tensor scales_;
-  std::vector<tensor::Tensor> weights_;
-};
+        int32_t get_scale_num() const;
+
+    protected:
+        int32_t group_size_ = 0;
+        bool is_quant_layer_ = false;
+        tensor::Tensor scales_;
+        std::vector<tensor::Tensor> weights_;//用于存放权重张量，例如matmul 和 rmsnorm算子中的权重
+    };
 }  // namespace op
 #endif  // KUIPER_INCLUDE_OP_LAYER_H_
