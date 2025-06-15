@@ -20,6 +20,7 @@ namespace kernel {
 
         arma::fvec in_tensor(const_cast<float *>(in_ptr), dim, false, true);
         arma::fvec out_tensor(const_cast<float *>(out_ptr), dim, false, true);
+        //权重是 rmsnorm中的可学习缩放参数 gamma
         arma::fvec wei_tensor(const_cast<float *>(wei_ptr), dim, false, true);
 
 #ifdef QWEN2_SUPPORT
@@ -30,6 +31,6 @@ namespace kernel {
 
         const float mean = arma::as_scalar(arma::mean(arma::pow(in_tensor, 2))) + eps;
         const float rsqrt = 1.f / std::sqrt(mean);
-        out_tensor = wei_tensor % (rsqrt * in_tensor);
+        out_tensor = wei_tensor % (rsqrt * in_tensor);// %是arma::fvec的逐元素惩罚操作
     }
 }  // namespace kernel
