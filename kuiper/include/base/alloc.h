@@ -57,7 +57,7 @@ namespace base {
     public:
         explicit CUDADeviceAllocator();
 
-        void *allocate(size_t byte_size) const override;
+        void *allocate(size_t byte_size) const override;//const表示这个成员函数不会修改当前对象的任何成员变量。 若前边有const 则修饰返回值
 
         void release(void *ptr) const override;
 
@@ -69,7 +69,7 @@ namespace base {
 
     class CPUDeviceAllocatorFactory {
     public:
-        static std::shared_ptr<CPUDeviceAllocator> get_instance() {
+        static std::shared_ptr<CPUDeviceAllocator> get_instance() {//经典单例模式实现
             if (instance == nullptr) {
                 instance = std::make_shared<CPUDeviceAllocator>();
             }
@@ -77,7 +77,7 @@ namespace base {
         }
 
     private:
-        static std::shared_ptr<CPUDeviceAllocator> instance;
+        static std::shared_ptr<CPUDeviceAllocator> instance;//private只能在类的内部访问
     };
 
     class CUDADeviceAllocatorFactory {

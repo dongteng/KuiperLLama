@@ -1,5 +1,5 @@
-include(../cmake/cuda.cmake)
-find_package(GTest REQUIRED)
+include(../cmake/cuda.cmake) #将文件包含进当前cmakelist
+find_package(GTest REQUIRED) #查找库 且此库必须 找不到则报错停止
 find_package(glog REQUIRED)
 
 set(link_ext_lib glog::glog GTest::gtest) #创建一个变量 link_ext_lib，里面保存了后续要链接的库名。

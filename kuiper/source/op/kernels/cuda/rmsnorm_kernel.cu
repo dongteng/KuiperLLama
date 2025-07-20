@@ -2,6 +2,7 @@
 #include "rmsnorm_kernel.cuh"
 
 namespace kernel {
+    //把输入数组in归一化  然后乘上权重wei 输出到out
     template<int32_t BLOCK_DIM> //template<int32_t BLOCK_DIM>：这是一个模板函数，BLOCK_DIM 表示每个 CUDA 线程块（block）的线程数（如 128、256 等）。
     static __global__ void row_rmsnorm_f32(float *in, float *wei, float *out, int size, float eps) {//cuda核函数
         //size是输入向量长度
@@ -11,11 +12,11 @@ namespace kernel {
 
 
         //假设size =10  那么 pack_num为2  pack_off= 2*4 =8
-        constexpr int pack_size = 4; //onstexpr 表示“编译期常量”
+        constexpr int pack_size = 4; //constexpr 表示“编译期常量”
         const int pack_num = size / pack_size;
         const int pack_off = pack_size * pack_num; //这两行代码的作用是为了实现SIMD 向量化计算（一次处理多个 float），比如通过 float4 一次处理 4 个
 
-        float sum = 0.0f; //定义一个局部变量sum  每个县城独立累加它所负责的元素的平方和
+        float sum = 0.0f; //定义一个局部变量sum  每个线程独立累加它所负责的元素的平方和
         float4 *in_pack = reinterpret_cast<float4 *>(in);//把 in 这个 float* 类型的指针（指向普通 float 数组）强行解释成 float4* 类型的指针。
         //例float in[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};  那么 reinterpret_cast<float4 *>(in) 把它“重新解释”成每 4 个 float 为一组的结构：
 //        in_pack[0] --> float4(1.0f, 2.0f, 3.0f, 4.0f)
@@ -55,10 +56,13 @@ namespace kernel {
         // rsqrtf CUDA 内置函数，计算 1 / sqrt(x)，即倒数平方根，速度快于先算开根号再取倒数。
         const float scale = rsqrtf(sum / static_cast<float>(size) + eps);//
 
+
+        //这段的作用是将输入数组in 归一化 并乘以权重wei ，结果存入out。
+        //把 wei 和 out 的指针解释为 float4* 类型
         float4 *wei_pack = reinterpret_cast<float4 *>(wei);
         float4 *out_pack = reinterpret_cast<float4 *>(out);
         for (int i = tid; i < pack_num; i += blockDim.x) {
-            float4 in_float4 = *(in_pack + i);
+            float4 in_float4 = *(in_pack + i);//in_pack + i 指的是第 i 个 float4块
             float4 wei_float4 = *(wei_pack + i);
             *(out_pack + i) =
                     make_float4(scale * in_float4.x * wei_float4.x, scale * in_float4.y * wei_float4.y,

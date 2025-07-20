@@ -90,9 +90,9 @@ namespace tensor {
         tensor::Tensor clone() const;
 
     private:
-        size_t size_ = 0;
+        size_t size_ = 0;//张量中数据的个数
         std::vector<int32_t> dims_;
-        std::shared_ptr<base::Buffer> buffer_;
+        std::shared_ptr<base::Buffer> buffer_;//Buffer类用来管理用分配器申请到的内存资源
         base::DataType data_type_ = base::DataType::kDataTypeUnknown;
     };
 
@@ -117,7 +117,7 @@ namespace tensor {
     //tensor.ptr<int32_t>() → 返回 const int32_t*
     //这样就避免了写很多重复函数。
     template<typename T>
-    const T *Tensor::ptr() const {//返回当前张两种 数据缓冲区的只读指针 （类型为const T*）
+    const T *Tensor::ptr() const {//返回当前张量 数据缓冲区的只读指针 （类型为const T*）
         if (!buffer_) {
             return nullptr;//如果这个缓冲区是空的 即张量还没分配内存 返回空指针
         }
@@ -142,6 +142,8 @@ namespace tensor {
         CHECK(buffer_ != nullptr && buffer_->ptr() != nullptr)
                         << "The data area buffer of this tensor is empty or it points to a null pointer.";
         return const_cast<T *>(reinterpret_cast<const T *>(buffer_->ptr())) + index;
+        //这是因为T*的步长和void*的步长是不一致的，
+        //比如我要访问ptr+1的位置，如果是直接将void*+1那么指针位置只会往后移动一个位置，如果是float*，那么指针的位置是往后移动4个位置的。
     }
 
     template<typename T>
