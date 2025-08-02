@@ -183,13 +183,17 @@ namespace op {
         }
     }
 
+    //权重的索引
     base::Status LayerParam::set_weight(int32_t idx, const std::vector<int32_t> &dims,
                                         const void *weight_ptr, base::DeviceType device_type) {
-        CHECK_GE(idx, 0);
-        CHECK_LT(idx, weights_.size());
-        CHECK_NE(weight_ptr, nullptr);
+        CHECK_GE(idx, 0);//idx >=0
+        CHECK_LT(idx, weights_.size()); //idx < weights_.size()
+        CHECK_NE(weight_ptr, nullptr);//权重指针不能为空
 
+        //计算权重大小
         size_t size = std::accumulate(dims.begin(), dims.end(), sizeof(float), std::multiplies<>());
+
+        //创建一个Buffer对象 封装权重内存   size内存大小 nullptr是需要重新分配内存（空表示不分配 用已有内存）
         std::shared_ptr<base::Buffer> buffer =
                 std::make_shared<base::Buffer>(size, nullptr, const_cast<void *>(weight_ptr), true);
         if (device_type != base::DeviceType::kDeviceUnknown) {
@@ -209,11 +213,15 @@ namespace op {
             weights_.at(idx) = weight;
 
             const int32_t weight_size = static_cast<int32_t>(weight.size());
-            CHECK(weight_size % group_size_ == 0);
+            CHECK(weight_size % group_size_ == 0);//检查权重长度是否是group_size_的整数倍
 
             int32_t scale_nums = weight_size / group_size_;
             scales_ = tensor::Tensor{base::DataType::kDataTypeFp32, scale_nums, false, nullptr,
                                      reinterpret_cast<float *>((int8_t *) weight_ptr + weight_size)};
+            //在权重量化时，每个 group 通常会有一个缩放因子（scale）。
+            //缩放因子存储在权重数据后面：
+            //[int8权重数据][scale因子数据]
+            //保存量化缩放因子，后续解码 Int8 权重时会用到。
             scales_.set_device_type(device_type);
         }
 

@@ -65,10 +65,20 @@ TEST(test_load, create_matmul) {
     auto config = model::ModelConfig{};
     fread(&config, sizeof(model::ModelConfig), 1, file);//调用 C 语言的 fread 函数，从文件 file 中读取数据。
 
-    fseek(file, 0, SEEK_END);
-    auto file_size = ftell(file);
+    fseek(file, 0, SEEK_END);//调用 fseek 函数，把文件指针移动到文件末尾。 0是偏移量
+    auto file_size = ftell(file);//ftell(file) 返回当前文件指针的位置。
+    //因为之前执行过 fseek(file, 0, SEEK_END)，此时文件指针已经在文件尾部，所以这里返回的是整个文件的字节大小。
 
+    //调用mmap把整个文件映射到内存中
+    //nullptr让内核选择映射的内存地址，可以指定，但是这里交给系统分配
+    //file_size 是映射区域大小 就是整个文件的字节数。PROT_READ: 这个区域是只读权限。MAP_PRIVATE: 私有映射，修改映射区域不会影响原文件（Copy-on-Write）
+    //fd: 文件描述符（注意这里是 fd，不是 file*，一般在用 fopen 后需要 fileno(file) 得到 fd）。
+    //0: 文件偏移量，从文件头开始映射。
+    //将整个文件直接映射到内存中，返回映射区域的首地址指针data
     void *data = mmap(nullptr, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+    //data这是一个 void* 指针，指向 文件映射到内存的首地址。由于它是 void*，无法直接进行偏移运算（void* 没有大小）
+    //把 data 转成 int8_t*（也可以理解为 char*）。int8_t* 是 字节指针，每次加 +1 偏移一个字节。
     float *weight_data =
             reinterpret_cast<float *>(static_cast<int8_t *>(data) + sizeof(model::ModelConfig));
 
